@@ -21,8 +21,11 @@ function rollDice(min: number, max: number): number {
 
 let gridIdx = 0;
 
+function stateTo(s?: number[][]) {
+  return (s ?? state).map((x) => x.map((z) => (z == -1 ? 0 : z)));
+}
+
 function onLineRead(line: string) {
-  // console.log(`>${line}`)
   if (stage === Stages.Data) {
     const data = line.split(" ").map(Number);
     width = data[0];
@@ -33,12 +36,12 @@ function onLineRead(line: string) {
       .map(() => []);
     stage = Stages.Grid;
   } else if (stage === Stages.Grid) {
-    gridIdx++;
     const rowData = line
       .split(" ")
       .map(Number)
       .map((x) => (x == 0 ? -1 : 0));
     state[gridIdx] = rowData;
+    gridIdx++;
 
     const cc = line.split(" ").map(Number);
     grid.push(cc);
@@ -46,36 +49,52 @@ function onLineRead(line: string) {
       stage = Stages.Dices;
     }
   } else if (stage === Stages.Dices) {
-    rounds--;
-    const rollData = line.split(" ").map(Number);
-    const first = rollData[0];
-    const second = rollData[1];
-    let x: number = 0,
-      y: number = 0;
+    handleDiceLine(line);
+  }
+}
 
-    while (true) {
-      if (!(state[y][x] !== 0 || state[y][x] === -1)) break;
-      x = rollDice(0, width / 2 - 1);
-      y = rollDice(0, height);
+function handleDiceLine(line: string) {
+  rounds--;
+  const rollData = line.split(" ").map(Number);
+  const first = rollData[0];
+  const second = rollData[1];
+  let x: number = 0,
+    y: number = 0;
+
+  //   let currentPoints = calculatePoints(stateTo(), grid);
+
+  let bestMovePoints = 0;
+  let bestMove: [number, number] = [0, 0];
+
+  let tries = 500;
+
+  while (true) {
+    if (!(state[y][x] !== 0 || state[y][x] === -1) && tries <= 0) {
+      if (bestMovePoints != 0) {
+        x = bestMove[0];
+        y = bestMove[1];
+      }
+      break;
     }
-    state[y][x] = first;
-    state[y][width - x - 1] = second;
-    // console.log(`--- GRID --- ${grid.map(x=>x.join(" ").replaceAll("-1", "X")).join("\n")}`)
-    console.log(`${first} ${x} ${y - 1}`);
+    x = rollDice(0, width / 2 - 1);
+    y = rollDice(0, height - 1);
 
-    console.log("# rounds " + rounds);
-    if (rounds == 1) {
-      Bun.write(Bun.file("compare.json"), JSON.stringify({ grid, state }));
-      console.log(
-        `Points calculated: ${calculatePoints(
-          state
-            .filter((x) => x.length)
-            .map((x) => x.map((z) => (z == -1 ? 0 : z))),
-          grid
-        )}`
-      );
+    let copy = stateTo(structuredClone(state));
+    copy[y][x] = first;
+    copy[y][width - x - 1] = second;
+    if (calculatePoints(copy, grid) > bestMovePoints) {
+      if (!(state[y][x] !== 0 || state[y][x] === -1)) {
+        bestMovePoints = calculatePoints(copy, grid);
+        bestMove = [x, y];
+      }
+    } else {
+      tries--;
     }
   }
+  state[y][x] = first;
+  state[y][width - x - 1] = second;
+
+  console.log(`${first} ${x} ${y}`);
 }
 
 async function readStdin(onLineRead) {

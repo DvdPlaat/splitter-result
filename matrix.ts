@@ -94,7 +94,6 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     }
 
     const res: Point[][] = Matrix.countIslands(stateCopy);
-    console.log("# len: " + res.length);
     const received: number = res.filter((c) => c.length === i).length * i;
     points += received;
 
