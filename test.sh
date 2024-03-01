@@ -1,0 +1,1 @@
+./tester/Tester --command "bun index.ts" --games 30
