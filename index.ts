@@ -15,93 +15,8 @@ let rounds: number;
 let state: number[][];
 let grid: number[][] = [];
 
-function isValidMove(state: number[][], x: number, y: number): boolean {
-  return !(state[y][x] !== 0 || state[y][x] === -1);
-}
-
-function makeMove(state: number[][], x: number, y: number): number[][] {
-  const newState = stateTo(state);
-  newState[y][x] = 1; // Assuming 1 represents a valid move in the state
-  return newState;
-}
-
-function gameIsOver(state: number[][]): boolean {
-  // Implement the condition for determining if the game is over
-  return !state.some((s) => s.includes(0));
-}
-
-const LOOKAHEAD_DEPTH = 3;
-
-function minimax(
-  state: number[][],
-  depth: number,
-  maximizingPlayer: boolean,
-  alpha: number,
-  beta: number,
-  grid: number[][]
-): number {
-  if (depth === 0 || gameIsOver(state)) {
-    return calculatePoints(state, grid);
-  }
-
-  if (maximizingPlayer) {
-    let maxEval = Number.NEGATIVE_INFINITY;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width / 2; x++) {
-        if (isValidMove(state, x, y)) {
-          const newState = makeMove(state, x, y);
-          const ev = minimax(newState, depth - 1, false, alpha, beta, grid);
-          maxEval = Math.max(maxEval, ev);
-          alpha = Math.max(alpha, ev);
-          if (beta <= alpha) {
-            break;
-          }
-        }
-      }
-    }
-    return maxEval;
-  } else {
-    let minEval = Number.POSITIVE_INFINITY;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width / 2; x++) {
-        if (isValidMove(state, x, y)) {
-          const newState = makeMove(state, x, y);
-          const ev = minimax(newState, depth - 1, true, alpha, beta, grid);
-          minEval = Math.min(minEval, ev);
-          beta = Math.min(beta, ev);
-          if (beta <= alpha) {
-            break;
-          }
-        }
-      }
-    }
-    return minEval;
-  }
-}
-
-function findBestMove(state: number[][], grid: number[][]): [number, number] {
-  let bestEval = Number.NEGATIVE_INFINITY;
-  let bestMove: [number, number] = [0, 0];
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width / 2; x++) {
-      if (isValidMove(state, x, y)) {
-        const newState = makeMove(state, x, y);
-        const ev = minimax(
-          newState,
-          LOOKAHEAD_DEPTH,
-          false,
-          Number.NEGATIVE_INFINITY,
-          Number.POSITIVE_INFINITY,
-          grid
-        );
-        if (ev > bestEval) {
-          bestEval = ev;
-          bestMove = [x, y];
-        }
-      }
-    }
-  }
-  return bestMove;
+function rollDice(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 let gridIdx = 0;
@@ -143,18 +58,61 @@ function handleDiceLine(line: string) {
   const rollData = line.split(" ").map(Number);
   const first = rollData[0];
   const second = rollData[1];
+  let x: number = 0;
+  let y: number = 0;
+  let num = 0;
 
-  const bestMove = findBestMove(state, grid);
-  const x = bestMove[0];
-  const y = bestMove[1];
+  //   let currentPoints = calculatePoints(stateTo(), grid);
 
-  state[y][x] = first;
-  state[y][width - x - 1] = second;
+  let bestMovePoints = 0;
+  let bestMove: [number, number, number] = [0, 0, 0];
 
-  console.log(`${first} ${x} ${y}`);
+  let tries = 100;
+
+  while (true) {
+    if (!(state[y][x] !== 0 || state[y][x] === -1) && tries <= 0) {
+      if (bestMovePoints != 0) {
+        num = bestMove[0];
+        x = bestMove[1];
+        y = bestMove[2];
+      } else {
+        num = first;
+      }
+      break;
+    }
+    x = rollDice(0, width / 2 - 1);
+    y = rollDice(0, height - 1);
+
+    let copy = stateTo(structuredClone(state));
+    copy[y][x] = first;
+    copy[y][width - x - 1] = second;
+
+    let flip = () => {
+      copy[y][x] = second;
+      copy[y][width - x - 1] = first;
+      return true;
+    };
+    if (calculatePoints(copy, grid) > bestMovePoints) {
+      if (!(state[y][x] !== 0 || state[y][x] === -1)) {
+        bestMovePoints = calculatePoints(copy, grid);
+        bestMove = [first, x, y];
+      }
+    } else if (flip() && calculatePoints(copy, grid) > bestMovePoints) {
+      if (!(state[y][x] !== 0 || state[y][x] === -1)) {
+        bestMovePoints = calculatePoints(copy, grid);
+        bestMove = [second, x, y];
+      }
+    } else {
+      tries--;
+    }
+  }
+  state[y][x] = num;
+  state[y][width - x - 1] = num == first ? second : second;
+
+  console.log(`${num} ${x} ${y}`);
 }
 
-async function readStdin(onLineRead: (line: string) => unknown) {
+async function readStdin(onLineRead: (line: string) => void) {
   const stream = await Bun.stdin.stream();
   const decoder = new TextDecoder();
 
@@ -163,12 +121,16 @@ async function readStdin(onLineRead: (line: string) => unknown) {
   for await (const chunk of stream) {
     const str = decoder.decode(chunk);
 
-    remainingData += str;
+    remainingData += str; // Append the chunk to the remaining data
 
+    // Split the remaining data by newline character
     let lines = remainingData.split(/\r?\n/);
+    // Loop through each line, except the last one
     while (lines.length > 1) {
+      // Remove the first line from the array and pass it to the callback
       onLineRead(lines.shift()!);
     }
+    // Update the remaining data with the last incomplete line
     remainingData = lines[0];
   }
 }

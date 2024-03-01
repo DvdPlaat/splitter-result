@@ -46,7 +46,7 @@ describe("ScoreTests", () => {
       [0, 0, 0, 0, 0],
     ];
 
-    expect(calculatePointsWrapper(gridC, state)).toBe(0);
+    expect(calculatePointsWrapper(gridC, state)).toBe(3);
   });
 
   test("TestDouble", () => {
@@ -62,7 +62,7 @@ describe("ScoreTests", () => {
       [0, 6, 6, 6, 6, 0],
     ];
 
-    expect(calculatePointsWrapper(gridE, state)).toBe(5);
+    expect(calculatePointsWrapper(gridE, state)).toBe(12);
   });
 
   test("TestRandom", () => {
@@ -73,7 +73,7 @@ describe("ScoreTests", () => {
       [0, 0, 0, 0, 0],
     ];
 
-    expect(calculatePointsWrapper(gridC, state)).toBe(4);
+    expect(calculatePointsWrapper(gridC, state)).toBe(5);
   });
 
   test("TestBigGrid", () => {
@@ -97,7 +97,7 @@ describe("ScoreTests", () => {
       [4, 4],
     ];
 
-    expect(calculatePointsWrapper(gridF, state)).toBe(15);
+    expect(calculatePointsWrapper(gridF, state)).toBe(19);
   });
 
   test("TestGridA", () => {
@@ -114,7 +114,7 @@ describe("ScoreTests", () => {
     // expect(calculatePointsWrapper(Grids.GridA, state)).toBe(7);
   });
   test("Random", () => {
-    console.log(
+    expect(
       calculatePoints(
         [
           [0, 0, 5, 3, 5, 5, 0, 0],
@@ -135,6 +135,6 @@ describe("ScoreTests", () => {
           [0, 0, 1, 1, 1, 1, 0, 0],
         ]
       )
-    );
+    ).toBe(15);
   });
 });

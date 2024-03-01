@@ -84,6 +84,18 @@ class DisjointUnionSets {
 export function calculatePoints(state: number[][], grid: number[][]): number {
   let points: number = 0;
 
+  let leftOverSpots = state.flatMap((x) => x).filter((x) => x === 0).length;
+
+  const starPlaces: Point[] = [];
+  const heartPlaces: Point[] = [];
+
+  grid.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value === Grids.STAR) starPlaces.push({ x, y });
+      else if (value === Grids.HEART) heartPlaces.push({ x, y });
+    });
+  });
+
   for (let i = 1; i <= 6; i++) {
     const stateCopy: number[][] = state.map((row) => [...row]);
     for (let k = 0; k < stateCopy.length; k++) {
@@ -95,17 +107,18 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
     const res: Point[][] = Matrix.countIslands(stateCopy);
     const received: number = res.filter((c) => c.length === i).length * i;
-    points += received;
+    const almostReceived: number =
+      6 > leftOverSpots
+        ? 0
+        : (res.filter((c) => i != 1 && c.length + 1 === i).length * i) / 3;
+    const almostAlmostReceived: number =
+      6 > leftOverSpots
+        ? 0
+        : (res.filter((c) => i != 1 && i != 2 && c.length + 2 === i).length *
+            i) /
+          6;
 
-    const starPlaces: Point[] = [];
-    const heartPlaces: Point[] = [];
-
-    grid.forEach((row, y) => {
-      row.forEach((value, x) => {
-        if (value === Grids.STAR) starPlaces.push({ x, y });
-        else if (value === Grids.HEART) heartPlaces.push({ x, y });
-      });
-    });
+    points += received + almostReceived + almostAlmostReceived;
 
     res
       .filter((c) => c.length === i)
@@ -119,9 +132,14 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
       if (state[heart.y][heart.x] === i) heartsReached += 1;
     });
 
-    if (heartsReached !== 0 && heartsReached === heartPlaces.length)
+    if (heartsReached !== 0 && heartsReached === heartPlaces.length) {
       points += 5;
+    }
   }
 
-  return points;
+  const allHeartNumbers = new Set(heartPlaces.map((p) => state[p.y][p.x]));
+  allHeartNumbers.delete(0);
+  if (allHeartNumbers.size === 1) points += 4;
+
+  return parseInt(points as unknown as string);
 }
