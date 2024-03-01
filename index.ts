@@ -15,8 +15,93 @@ let rounds: number;
 let state: number[][];
 let grid: number[][] = [];
 
-function rollDice(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+function isValidMove(state: number[][], x: number, y: number): boolean {
+  return !(state[y][x] !== 0 || state[y][x] === -1);
+}
+
+function makeMove(state: number[][], x: number, y: number): number[][] {
+  const newState = stateTo(state);
+  newState[y][x] = 1; // Assuming 1 represents a valid move in the state
+  return newState;
+}
+
+function gameIsOver(state: number[][]): boolean {
+  // Implement the condition for determining if the game is over
+  return !state.some((s) => s.includes(0));
+}
+
+const LOOKAHEAD_DEPTH = 3;
+
+function minimax(
+  state: number[][],
+  depth: number,
+  maximizingPlayer: boolean,
+  alpha: number,
+  beta: number,
+  grid: number[][]
+): number {
+  if (depth === 0 || gameIsOver(state)) {
+    return calculatePoints(state, grid);
+  }
+
+  if (maximizingPlayer) {
+    let maxEval = Number.NEGATIVE_INFINITY;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width / 2; x++) {
+        if (isValidMove(state, x, y)) {
+          const newState = makeMove(state, x, y);
+          const ev = minimax(newState, depth - 1, false, alpha, beta, grid);
+          maxEval = Math.max(maxEval, ev);
+          alpha = Math.max(alpha, ev);
+          if (beta <= alpha) {
+            break;
+          }
+        }
+      }
+    }
+    return maxEval;
+  } else {
+    let minEval = Number.POSITIVE_INFINITY;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width / 2; x++) {
+        if (isValidMove(state, x, y)) {
+          const newState = makeMove(state, x, y);
+          const ev = minimax(newState, depth - 1, true, alpha, beta, grid);
+          minEval = Math.min(minEval, ev);
+          beta = Math.min(beta, ev);
+          if (beta <= alpha) {
+            break;
+          }
+        }
+      }
+    }
+    return minEval;
+  }
+}
+
+function findBestMove(state: number[][], grid: number[][]): [number, number] {
+  let bestEval = Number.NEGATIVE_INFINITY;
+  let bestMove: [number, number] = [0, 0];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width / 2; x++) {
+      if (isValidMove(state, x, y)) {
+        const newState = makeMove(state, x, y);
+        const ev = minimax(
+          newState,
+          LOOKAHEAD_DEPTH,
+          false,
+          Number.NEGATIVE_INFINITY,
+          Number.POSITIVE_INFINITY,
+          grid
+        );
+        if (ev > bestEval) {
+          bestEval = ev;
+          bestMove = [x, y];
+        }
+      }
+    }
+  }
+  return bestMove;
 }
 
 let gridIdx = 0;
@@ -58,46 +143,18 @@ function handleDiceLine(line: string) {
   const rollData = line.split(" ").map(Number);
   const first = rollData[0];
   const second = rollData[1];
-  let x: number = 0,
-    y: number = 0;
 
-  //   let currentPoints = calculatePoints(stateTo(), grid);
+  const bestMove = findBestMove(state, grid);
+  const x = bestMove[0];
+  const y = bestMove[1];
 
-  let bestMovePoints = 0;
-  let bestMove: [number, number] = [0, 0];
-
-  let tries = 500;
-
-  while (true) {
-    if (!(state[y][x] !== 0 || state[y][x] === -1) && tries <= 0) {
-      if (bestMovePoints != 0) {
-        x = bestMove[0];
-        y = bestMove[1];
-      }
-      break;
-    }
-    x = rollDice(0, width / 2 - 1);
-    y = rollDice(0, height - 1);
-
-    let copy = stateTo(structuredClone(state));
-    copy[y][x] = first;
-    copy[y][width - x - 1] = second;
-    if (calculatePoints(copy, grid) > bestMovePoints) {
-      if (!(state[y][x] !== 0 || state[y][x] === -1)) {
-        bestMovePoints = calculatePoints(copy, grid);
-        bestMove = [x, y];
-      }
-    } else {
-      tries--;
-    }
-  }
   state[y][x] = first;
   state[y][width - x - 1] = second;
 
   console.log(`${first} ${x} ${y}`);
 }
 
-async function readStdin(onLineRead) {
+async function readStdin(onLineRead: (line: string) => unknown) {
   const stream = await Bun.stdin.stream();
   const decoder = new TextDecoder();
 
@@ -106,16 +163,12 @@ async function readStdin(onLineRead) {
   for await (const chunk of stream) {
     const str = decoder.decode(chunk);
 
-    remainingData += str; // Append the chunk to the remaining data
+    remainingData += str;
 
-    // Split the remaining data by newline character
     let lines = remainingData.split(/\r?\n/);
-    // Loop through each line, except the last one
     while (lines.length > 1) {
-      // Remove the first line from the array and pass it to the callback
-      onLineRead(lines.shift());
+      onLineRead(lines.shift()!);
     }
-    // Update the remaining data with the last incomplete line
     remainingData = lines[0];
   }
 }
