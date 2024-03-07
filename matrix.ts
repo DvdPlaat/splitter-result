@@ -88,6 +88,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
   const starPlaces: Point[] = [];
   const heartPlaces: Point[] = [];
+  const maxNumber = Math.max(...state.flat());
 
   grid.forEach((row, y) => {
     row.forEach((value, x) => {
@@ -96,40 +97,28 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     });
   });
 
-  for (let i = 1; i <= 6; i++) {
-    const stateCopy: number[][] = state.map((row) => [...row]);
-    for (let k = 0; k < stateCopy.length; k++) {
-      for (let j = 0; j < stateCopy[0].length; j++) {
-        if (stateCopy[k][j] !== i) stateCopy[k][j] = Grids.EMPTY;
-        else stateCopy[k][j] = 1;
-      }
-    }
+  for (let i = 1; i <= maxNumber; i++) {
+    const stateCopy: number[][] = state.map((row) =>
+      [...row].map((cell) => (cell === i ? 1 : 0))
+    );
 
     const res: Point[][] = Matrix.countIslands(stateCopy);
+    const groupSize = res.filter((c) => c.length === i);
 
-    const received: number = res.filter((c) => c.length === i).length * i;
+    let received = groupSize.length * i;
 
-    const almostReceived: number =
-      6 > leftOverSpots
-        ? 0
-        : (res.filter((c) => i != 1 && c.length + 1 === i).length * i) / 5;
-    const almostAlmostReceived: number =
-      6 > leftOverSpots
-        ? 0
-        : (res.filter((c) => i != 1 && i != 2 && c.length + 2 === i).length *
-            i) /
-          10;
-
-    points += received + almostReceived + almostAlmostReceived;
+    received +=
+      (res.filter((c) => i !== 1 && c.length + 1 === i).length * i) / 5;
+    received +=
+      (res.filter((c) => i !== 1 && i !== 2 && c.length + 2 === i).length * i) /
+      10;
 
     const toomuch = res.filter((c) => c.length > i).length;
-    if (toomuch > 0) {
-      points -= toomuch / 5;
-    }
     const notEnough = res.filter((c) => c.length < i).length;
-    if (notEnough > 2) {
-      points -= 2;
-    }
+
+    points += received - toomuch / 5 - Math.min(notEnough, 2);
+
+    if (i === maxNumber && notEnough === 0) points += 4;
 
     res
       .filter((c) => c.length === i)
@@ -138,19 +127,30 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
           points += i;
       });
 
-    let heartsReached: number = 0;
-    heartPlaces.forEach((heart) => {
-      if (state[heart.y][heart.x] === i) heartsReached += 1;
-    });
+    const heartsReached = heartPlaces.filter(
+      (heart) => state[heart.y][heart.x] === i
+    ).length;
+    if (heartsReached === heartPlaces.length) points += 2 * heartsReached + 2;
+  }
 
-    if (heartsReached !== 0 && heartsReached === heartPlaces.length) {
-      points += 5;
+  for (const star of starPlaces) {
+    let val = state[star.y][star.x];
+    points += val === 0 ? 2 : val;
+
+    let yMin = Math.max(0, star.y - 1);
+    let yMax = Math.min(state.length - 1, star.y + 1);
+    let xMin = Math.max(0, star.x - 1);
+    let xMax = Math.min(state[0].length - 1, star.x + 1);
+
+    for (let y = yMin; y <= yMax; y++) {
+      for (let x = xMin; x <= xMax; x++) {
+        if (x === star.x && y === star.y) continue;
+
+        if (state[y][x] === 0) points += 0.005;
+        if (state[y][x] === val) points += val / 9;
+      }
     }
   }
 
-  const allHeartNumbers = new Set(heartPlaces.map((p) => state[p.y][p.x]));
-  allHeartNumbers.delete(0);
-  if (allHeartNumbers.size === 1) points += 4;
-
-  return parseInt(points as unknown as string);
+  return points;
 }

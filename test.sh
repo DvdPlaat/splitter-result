@@ -1,1 +1,1 @@
-./tester/Tester --command "bun index.ts" --games 100 --silent --seed 69
+./tester/Tester --command "bun index.ts" --games 150 --silent --seed 69
