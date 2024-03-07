@@ -106,19 +106,30 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     }
 
     const res: Point[][] = Matrix.countIslands(stateCopy);
+
     const received: number = res.filter((c) => c.length === i).length * i;
+
     const almostReceived: number =
       6 > leftOverSpots
         ? 0
-        : (res.filter((c) => i != 1 && c.length + 1 === i).length * i) / 3;
+        : (res.filter((c) => i != 1 && c.length + 1 === i).length * i) / 5;
     const almostAlmostReceived: number =
       6 > leftOverSpots
         ? 0
         : (res.filter((c) => i != 1 && i != 2 && c.length + 2 === i).length *
             i) /
-          6;
+          10;
 
     points += received + almostReceived + almostAlmostReceived;
+
+    const toomuch = res.filter((c) => c.length > i).length;
+    if (toomuch > 0) {
+      points -= toomuch / 5;
+    }
+    const notEnough = res.filter((c) => c.length < i).length;
+    if (notEnough > 2) {
+      points -= 2;
+    }
 
     res
       .filter((c) => c.length === i)
