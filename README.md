@@ -2,7 +2,7 @@
 
 ## Running
 
-Clone the splitter repo and run
+Clone the [splitter repo](https://github.com/Lucrasoft/Splitter) and run
 ```
 dotnet publish -c Release -r linux-x64 --self-contained false
 mv ./Tester/bin/Release/net8.0/linux-x64 <THISREPOPATH>/tester
