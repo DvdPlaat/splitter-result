@@ -7,8 +7,8 @@ then
 fi
 
 git clone https://github.com/Lucrasoft/Splitter.git
-( cd Splitter/Source && dotnet restore && dotnet build --self-contained false )
-mv Splitter/Source/Tester/bin/Debug/net8.0 tester
+( cd Splitter/Source && dotnet restore && dotnet build -c Release --self-contained false )
+mv Splitter/Source/Tester/bin/Release/net8.0 tester
 
 curl -fsSL https://bun.sh/install | bash
 
