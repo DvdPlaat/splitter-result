@@ -80,7 +80,6 @@ class DisjointUnionSets {
     }
   }
 }
-
 export function calculatePoints(state: number[][], grid: number[][]): number {
   let points: number = 0;
 
@@ -88,8 +87,6 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
   const starPlaces: Point[] = [];
   const heartPlaces: Point[] = [];
-  const maxNumber = Math.max(...state.flat());
-
   grid.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value === Grids.STAR) starPlaces.push({ x, y });
@@ -105,7 +102,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
   points += Math.max(0, 6 - res.length);
 
-  for (let i = 1; i <= maxNumber; i++) {
+  for (let i = 1; i <= 6; i++) {
     const stateCopy: number[][] = state.map((row) =>
       [...row].map((cell) => (cell === i ? 1 : 0))
     );
@@ -114,19 +111,14 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     const groupSize = res.filter((c) => c.length === i);
 
     let received = groupSize.length * i;
-
     received +=
-      (res.filter((c) => i !== 1 && c.length + 1 === i).length * i) / 5;
+      (res.filter((c) => i !== 1 && c.length + 1 === i).length * i) / 4;
     received +=
       (res.filter((c) => i !== 1 && i !== 2 && c.length + 2 === i).length * i) /
       10;
-
     const toomuch = res.filter((c) => c.length > i).length;
     const notEnough = res.filter((c) => c.length < i).length;
-
-    points += received - toomuch / 5 - Math.min(notEnough, 2);
-
-    if (i === maxNumber && notEnough === 0) points += 4;
+    points += received - toomuch * 1.9 - Math.min(notEnough, 2);
 
     res
       .filter((c) => c.length === i)
