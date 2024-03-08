@@ -1,4 +1,4 @@
-# splitter
+# Splitter
 
 ## Requirements
 
@@ -9,7 +9,7 @@ Install the dependencies
 - Clone [splitter](https://github.com/Lucrasoft/Splitter), restore the packages and run `dotnet publish -c Release --self-contained false`. After that, move the binaries to the `tester` folder in the project root.
 
 > [!TIP]
-> Install `dotnet8` on a Raspbery Pi:
+> If you want to use `dotnet8` on a Raspbery Pi:
 > 
 > ```sh
 > curl -fsSL https://raw.githubusercontent.com/pjgpetecodes/dotnet8pi/main/install.sh | sudo bash
