@@ -96,8 +96,16 @@ function handleDiceLine(line: string) {
   state[y][x] = num;
   state[y][width - x - 1] = num == first ? second : second;
   console;
-  console.log(`# ${num} ${x} ${y} `);
-  console.log(`${num} ${x} ${y}`);
+  console.log(`${num} ${x} ${y} `);
+  // if (rounds == 0) {
+  //   Bun.write(
+  //     `boards/${Date.now()}_${crypto.randomUUID()}`,
+  //     state
+  //       .map((x) => x.join(" "))
+  //       .join("\n")
+  //       .replaceAll("-1", "0")
+  //   );
+  // }
 }
 
 async function readStdin(onLineRead: (line: string) => void) {

@@ -97,6 +97,14 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     });
   });
 
+  const stateCopy: number[][] = state.map((row) =>
+    [...row].map((cell) => (cell === 0 ? 1 : 0))
+  );
+
+  const res: Point[][] = Matrix.countIslands(stateCopy);
+
+  points += Math.max(0, 6 - res.length);
+
   for (let i = 1; i <= maxNumber; i++) {
     const stateCopy: number[][] = state.map((row) =>
       [...row].map((cell) => (cell === i ? 1 : 0))
