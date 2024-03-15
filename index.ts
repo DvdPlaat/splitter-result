@@ -1,5 +1,5 @@
 import { calculatePoints } from "./matrix";
-
+import { appendFile } from "fs/promises";
 enum Stages {
   Data = 0,
   Grid = 1,
@@ -14,10 +14,6 @@ let rounds: number;
 
 let state: number[][];
 let grid: number[][] = [];
-
-function rollDice(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
 
 let gridIdx = 0;
 
@@ -53,6 +49,10 @@ function onLineRead(line: string) {
   }
 }
 
+async function log(x: any) {
+  appendFile("log.txt", x.toString() + "\n");
+}
+
 function handleDiceLine(line: string) {
   rounds--;
   const rollData = line.split(" ").map(Number);
@@ -66,36 +66,32 @@ function handleDiceLine(line: string) {
     for (let x = 0; x < width / 2; x++) {
       if (state[y][x] !== 0 || state[y][x] === -1) continue;
 
-      if (bestMovePoints == 0) {
-        bestMove = [first, x, y];
-      }
-
-      let copy = stateTo(structuredClone(state));
+      const copy = stateTo(state);
       copy[y][x] = first;
       copy[y][width - x - 1] = second;
+      let points = calculatePoints(copy, grid);
 
-      if (calculatePoints(copy, grid) > bestMovePoints) {
-        bestMovePoints = calculatePoints(copy, grid);
+      if (points > bestMovePoints) {
+        bestMovePoints = points;
         bestMove = [first, x, y];
       }
 
       copy[y][x] = second;
       copy[y][width - x - 1] = first;
+      points = calculatePoints(copy, grid);
 
-      if (calculatePoints(copy, grid) > bestMovePoints) {
-        bestMovePoints = calculatePoints(copy, grid);
+      if (points > bestMovePoints) {
+        bestMovePoints = points;
         bestMove = [second, x, y];
       }
     }
   }
 
-  let num = bestMove[0];
-  let x = bestMove[1];
-  let y = bestMove[2];
+  const [num, x, y] = bestMove;
 
   state[y][x] = num;
-  state[y][width - x - 1] = num == first ? second : second;
-  console;
+  state[y][width - x - 1] = num == first ? second : first;
+
   console.log(`${num} ${x} ${y} `);
   // if (rounds == 0) {
   //   Bun.write(
