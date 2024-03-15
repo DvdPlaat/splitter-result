@@ -1,10 +1,10 @@
 const args = ["1", "2"];
-
+console.time("run");
 let jobs = [];
 
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 5; i++) {
   jobs.push(
-    Bun.$`./tester/Tester --command "bun index.ts" --games 50 --silent --seed ${i} --layout ${
+    Bun.$`./tester/Tester --command "bun index.ts" --games 40 --silent --seed ${i} --layout ${
       args[i % 2]
     }`
       .text()
@@ -14,4 +14,8 @@ for (let i = 0; i < 20; i++) {
 
 const res = await Promise.all(jobs);
 
-console.log(res.reduce((a, b) => a + b, 0) / res.length);
+console.timeEnd("run");
+console.log(
+  "AVG POINTS:",
+  (res.reduce((a, b) => a + b, 0) / res.length).toFixed(2)
+);

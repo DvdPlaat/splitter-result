@@ -29,14 +29,14 @@ bun install
 
 ### Build
 
-Build [splitter](https://github.com/Lucrasoft/Splitter) (on Windows and) for Lunux with the x86_64 architecture:
+Build [splitter](https://github.com/Lucrasoft/Splitter) (on Windows and) for GNU/Linux with the x86_64 architecture:
 
 ```sh
 dotnet publish -c Release -r linux-x64 --self-contained false
 mv ./Tester/bin/Release/net8.0/linux-x64 <THISREPOPATH>/tester
 ```
 
-Build [splitter](https://github.com/Lucrasoft/Splitter) (on Windows and) for Lunux with the arm64 architecture:
+Build [splitter](https://github.com/Lucrasoft/Splitter) (on Windows and) for GNU/Linux with the arm64 architecture:
 
 ```sh
 dotnet publish -c Release -r linux-arm64 --self-contained false
