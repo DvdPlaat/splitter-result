@@ -1,140 +1,186 @@
-import { Matrix, calculatePoints } from "./matrix";
+import { calculatePoints, countIslands, type Point } from "./matrix";
 import { test, expect, describe } from "bun:test";
 
-describe("ScoreTests", () => {
-  const gridC: number[][] = [
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0],
-  ];
+function string2Islands(input: string) {
+  return countIslands(
+    input
+      .trim()
+      .split("\n")
+      .map((x) => x.trim().split("").map(Number))
+  );
+}
 
-  const gridD: number[][] = [[2]];
-
-  const gridE: number[][] = [
-    [0, 1, 1, 1, 1, 0],
-    [3, 1, 1, 3, 1, 1],
-    [0, 1, 1, 1, 1, 0],
-  ];
-
-  const gridF: number[][] = [
-    [3, 3],
-    [1, 1],
-    [2, 2],
-  ];
-
-  const calculatePointsWrapper = (grid: number[][], state: number[][]) => {
-    return calculatePoints(state, grid);
-  };
-
-  test("TestAllGroups", () => {
-    const state: number[][] = [
-      [0, 0, 0, 0, 0],
-      [3, 3, 3, 4, 4],
-      [1, 2, 2, 4, 4],
-      [0, 0, 0, 0, 0],
-    ];
-
-    expect(calculatePointsWrapper(gridC, state)).toBe(10);
-  });
-
-  test("TestZero", () => {
-    const state: number[][] = [
-      [0, 0, 0, 0, 0],
-      [3, 2, 3, 5, 4],
-      [1, 1, 2, 4, 4],
-      [0, 0, 0, 0, 0],
-    ];
-
-    expect(calculatePointsWrapper(gridC, state)).toBe(3);
-  });
-
-  test("TestDouble", () => {
-    const state: number[][] = [[1]];
-
-    expect(calculatePointsWrapper(gridD, state)).toBe(2);
-  });
-
-  test("TestHearts", () => {
-    const state: number[][] = [
-      [0, 6, 6, 6, 6, 0],
-      [4, 1, 1, 4, 2, 3],
-      [0, 6, 6, 6, 6, 0],
-    ];
-
-    expect(calculatePointsWrapper(gridE, state)).toBe(12);
-  });
-
-  test("TestRandom", () => {
-    const state: number[][] = [
-      [0, 0, 0, 0, 0],
-      [3, 3, 3, 5, 4],
-      [1, 5, 2, 4, 4],
-      [0, 0, 0, 0, 0],
-    ];
-
-    expect(calculatePointsWrapper(gridC, state)).toBe(5);
-  });
-
-  test("TestBigGrid", () => {
-    const state: number[][] = [
-      [1, 1, 1, 0, 0, 1, 3, 1],
-      [1, 1, 3, 3, 3, 1, 1, 1],
-      [0, 6, 1, 1, 1, 1, 5, 0],
-      [0, 1, 1, 0, 0, 3, 5, 0],
-      [0, 1, 1, 1, 6, 5, 5, 0],
-      [1, 1, 1, 1, 2, 2, 5, 1],
-      [2, 2, 1, 0, 0, 1, 2, 1],
-    ];
-
-    // expect(calculatePointsWrapper(Grids.GridB, state)).toBe(15);
-  });
-
-  test("TestWeirdGrid", () => {
-    const state: number[][] = [
-      [2, 2],
-      [4, 4],
-      [4, 4],
-    ];
-
-    expect(calculatePointsWrapper(gridF, state)).toBe(19);
-  });
-
-  test("TestGridA", () => {
-    const state: number[][] = [
-      [0, 0, 2, 4, 5, 1, 0, 0],
-      [0, 1, 3, 3, 3, 1, 1, 0],
-      [5, 6, 1, 1, 1, 1, 5, 5],
-      [3, 1, 1, 6, 6, 3, 5, 4],
-      [1, 1, 1, 1, 6, 5, 5, 5],
-      [0, 1, 1, 1, 2, 2, 5, 0],
-      [0, 0, 1, 6, 6, 1, 0, 0],
-    ];
-
-    // expect(calculatePointsWrapper(Grids.GridA, state)).toBe(7);
-  });
-  test("Random", () => {
+describe("CountIslands", () => {
+  test("CountIslands", () => {
     expect(
-      calculatePoints(
-        [
-          [0, 0, 5, 3, 5, 5, 0, 0],
-          [0, 6, 3, 5, 3, 4, 5, 0],
-          [3, 3, 6, 3, 5, 5, 2, 5],
-          [1, 5, 3, 1, 6, 6, 4, 3],
-          [3, 2, 4, 0, 0, 6, 4, 2],
-          [0, 5, 1, 2, 4, 6, 5, 0],
-          [0, 0, 6, 2, 3, 2, 0, 0],
-        ],
-        [
-          [0, 0, 1, 1, 1, 1, 0, 0],
-          [0, 1, 1, 1, 1, 1, 1, 0],
-          [1, 1, 1, 1, 1, 1, 1, 1],
-          [2, 1, 1, 1, 1, 1, 1, 2],
-          [1, 1, 1, 1, 1, 1, 1, 1],
-          [0, 1, 1, 1, 1, 1, 1, 0],
-          [0, 0, 1, 1, 1, 1, 0, 0],
-        ]
-      )
-    ).toBe(15);
+      string2Islands(`
+    11111
+    00000
+    11111
+    00000
+    11111
+    00000
+    `).length
+    ).toBe(3);
+  });
+  test("CountMoreIslands", () => {
+    expect(
+      string2Islands(`
+    11111
+    11111
+    11111
+    11111
+    11111
+    11111
+    `).length
+    ).toBe(1);
+  });
+
+  test("CountStars!", () => {
+    expect(
+      string2Islands(`
+    1010101
+    0101010
+    1010101
+    0101010
+    `).length
+    ).toBe(14);
+  });
+
+  test("should return correct number of islands and their coordinates", () => {
+    const input = `
+      11111
+      00000
+      11111
+      00000
+      11111
+      00000
+    `;
+    const expectedOutput = [
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+        { x: 4, y: 0 },
+      ],
+      [
+        { x: 0, y: 2 },
+        { x: 1, y: 2 },
+        { x: 2, y: 2 },
+        { x: 3, y: 2 },
+        { x: 4, y: 2 },
+      ],
+      [
+        { x: 0, y: 4 },
+        { x: 1, y: 4 },
+        { x: 2, y: 4 },
+        { x: 3, y: 4 },
+        { x: 4, y: 4 },
+      ],
+    ];
+    expect(string2Islands(input)).toEqual(expectedOutput);
+  });
+
+  test("should handle single island", () => {
+    const input = `
+      10001
+      11111
+      11111
+      11111
+      10001
+    `;
+    const expectedOutput = [
+      [
+        { x: 0, y: 0 },
+        { x: 4, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 3, y: 1 },
+        { x: 4, y: 1 },
+        { x: 0, y: 2 },
+        { x: 1, y: 2 },
+        { x: 2, y: 2 },
+        { x: 3, y: 2 },
+        { x: 4, y: 2 },
+        { x: 0, y: 3 },
+        { x: 1, y: 3 },
+        { x: 2, y: 3 },
+        { x: 3, y: 3 },
+        { x: 4, y: 3 },
+        { x: 0, y: 4 },
+        { x: 4, y: 4 },
+      ],
+    ];
+    expect(string2Islands(input)).toEqual(expectedOutput);
+  });
+
+  test("should find islands in a grid", () => {
+    const input = `
+      11111
+      00000
+      11111
+      00000
+      11111
+      00000
+    `;
+    const expectedOutput: Point[][] = [
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+        { x: 4, y: 0 },
+      ],
+      [
+        { x: 0, y: 2 },
+        { x: 1, y: 2 },
+        { x: 2, y: 2 },
+        { x: 3, y: 2 },
+        { x: 4, y: 2 },
+      ],
+      [
+        { x: 0, y: 4 },
+        { x: 1, y: 4 },
+        { x: 2, y: 4 },
+        { x: 3, y: 4 },
+        { x: 4, y: 4 },
+      ],
+    ];
+
+    const result = string2Islands(input);
+    expect(result).toEqual(expectedOutput);
+  });
+
+  test("should handle a grid with no islands", () => {
+    const input = `
+      00000
+      00000
+      00000
+      00000
+      00000
+    `;
+    const expectedOutput: Point[][] = [];
+    const result = string2Islands(input);
+    expect(result).toEqual(expectedOutput);
+  });
+
+  test("should handle an empty input", () => {
+    expect(countIslands([[]])).toEqual([]);
+  });
+
+  test("should handle a single-row input", () => {
+    expect(countIslands([[1, 0, 1]])).toEqual([
+      [{ x: 0, y: 0 }],
+      [{ x: 2, y: 0 }],
+    ]);
+  });
+
+  test("should handle a single-column input", () => {
+    expect(countIslands([[1], [0], [1]])).toEqual([
+      [{ x: 0, y: 0 }],
+      [{ x: 0, y: 2 }],
+    ]);
   });
 });

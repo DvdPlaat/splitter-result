@@ -1,4 +1,4 @@
-interface Point {
+export interface Point {
   x: number;
   y: number;
 }
@@ -10,53 +10,49 @@ class Grids {
   public static HEART: number = 3;
 }
 
-export class Matrix {
-  public static countIslands(state: number[][]): Point[][] {
-    const n: number = state.length;
-    const m: number = state[0].length;
-    const dus: DisjointUnionSets = new DisjointUnionSets(n * m);
+export function countIslands(state: number[][]): Point[][] {
+  const n: number = state.length;
+  const m: number = state[0].length;
+  const dus: DisjointUnionSets = new DisjointUnionSets(n * m);
 
-    for (let j = 0; j < n; j++) {
-      for (let k = 0; k < m; k++) {
-        if (state[j][k] === 0) continue;
+  for (let j = 0; j < n; j++) {
+    for (let k = 0; k < m; k++) {
+      if (state[j][k] === 0) continue;
 
-        if (j + 1 < n && state[j + 1][k] === 1)
-          dus.union(j * m + k, (j + 1) * m + k);
-        if (j - 1 >= 0 && state[j - 1][k] === 1)
-          dus.union(j * m + k, (j - 1) * m + k);
-        if (k + 1 < m && state[j][k + 1] === 1)
-          dus.union(j * m + k, j * m + k + 1);
-        if (k - 1 >= 0 && state[j][k - 1] === 1)
-          dus.union(j * m + k, j * m + k - 1);
-      }
+      if (j + 1 < n && state[j + 1][k] === 1)
+        dus.union(j * m + k, (j + 1) * m + k);
+      if (j - 1 >= 0 && state[j - 1][k] === 1)
+        dus.union(j * m + k, (j - 1) * m + k);
+      if (k + 1 < m && state[j][k + 1] === 1)
+        dus.union(j * m + k, j * m + k + 1);
+      if (k - 1 >= 0 && state[j][k - 1] === 1)
+        dus.union(j * m + k, j * m + k - 1);
     }
-
-    const islandSets: Map<number, Point[]> = new Map();
-    for (let j = 0; j < n; j++) {
-      for (let k = 0; k < m; k++) {
-        if (state[j][k] === 1) {
-          const root: number = dus.find(j * m + k);
-          if (!islandSets.has(root)) islandSets.set(root, []);
-          islandSets.get(root)!.push({ x: k, y: j });
-        }
-      }
-    }
-
-    const islandTuples: Point[][] = Array.from(islandSets.values());
-
-    return islandTuples;
   }
+
+  const islandSets: Map<number, Point[]> = new Map();
+  for (let j = 0; j < n; j++) {
+    for (let k = 0; k < m; k++) {
+      if (state[j][k] === 1) {
+        const root: number = dus.find(j * m + k);
+        if (!islandSets.has(root)) islandSets.set(root, []);
+        islandSets.get(root)!.push({ x: k, y: j });
+      }
+    }
+  }
+
+  const islandTuples: Point[][] = Array.from(islandSets.values());
+
+  return islandTuples;
 }
 
 class DisjointUnionSets {
   private rank: number[];
   private parent: number[];
-  private n: number;
 
   constructor(n: number) {
     this.rank = new Array(n).fill(0);
     this.parent = new Array(n).fill(0).map((_, index) => index);
-    this.n = n;
   }
 
   public find(x: number): number {
@@ -80,10 +76,9 @@ class DisjointUnionSets {
     }
   }
 }
+
 export function calculatePoints(state: number[][], grid: number[][]): number {
   let points: number = 0;
-
-  let leftOverSpots = state.flatMap((x) => x).filter((x) => x === 0).length;
 
   const starPlaces: Point[] = [];
   const heartPlaces: Point[] = [];
@@ -98,7 +93,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     [...row].map((cell) => (cell === 0 ? 1 : 0))
   );
 
-  const res: Point[][] = Matrix.countIslands(stateCopy);
+  const res: Point[][] = countIslands(stateCopy);
 
   points += Math.max(0, 6 - res.length);
 
@@ -107,7 +102,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
       [...row].map((cell) => (cell === i ? 1 : 0))
     );
 
-    const res: Point[][] = Matrix.countIslands(stateCopy);
+    const res: Point[][] = countIslands(stateCopy);
     const groupSize = res.filter((c) => c.length === i);
 
     let received = groupSize.length * i;
