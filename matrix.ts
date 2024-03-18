@@ -105,15 +105,15 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     const res: Point[][] = countIslands(stateCopy);
     const groupSize = res.filter((c) => c.length === i);
 
-    let received = groupSize.length * i;
+    let received = groupSize.length * i * 2;
     received +=
       (res.filter((c) => i !== 1 && c.length + 1 === i).length * i) / 4;
     received +=
       (res.filter((c) => i !== 1 && i !== 2 && c.length + 2 === i).length * i) /
       9;
-    const toomuch = res.filter((c) => c.length > i).length;
+    const toomuch = res.filter((c) => c.length > i).length * 1.2;
     const notEnough = res.filter((c) => c.length < i).length;
-    points += received - toomuch * 1.9 - Math.min(notEnough, 2);
+    points += received - toomuch - Math.min(notEnough, 6);
 
     res
       .filter((c) => c.length === i)

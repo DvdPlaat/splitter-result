@@ -2,6 +2,8 @@ const args = ["1", "2"];
 console.time("run");
 let jobs = [];
 
+import "./matrix";
+
 for (let i = 0; i < 5; i++) {
   jobs.push(
     Bun.$`./tester/Tester --command "bun index.ts" --games 40 --silent --seed ${i} --layout ${
