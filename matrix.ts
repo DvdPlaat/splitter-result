@@ -95,7 +95,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
   const res: Point[][] = countIslands(stateCopy);
 
-  points += Math.max(0, 6 - res.length);
+  points += Math.max(0, 2 - res.length);
 
   for (let i = 1; i <= 6; i++) {
     const stateCopy: number[][] = state.map((row) =>
@@ -125,7 +125,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
     const heartsReached = heartPlaces.filter(
       (heart) => state[heart.y][heart.x] === i
     ).length;
-    if (heartsReached === heartPlaces.length) points += 2 * heartsReached + 2;
+    if (heartsReached === heartPlaces.length) points += heartsReached + 2;
   }
 
   for (const star of starPlaces) {

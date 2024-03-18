@@ -178,3 +178,6 @@ dist
 dnsmasq.conf
 boards
 dnsexample.conf
+
+avg.txt
+max.txt
