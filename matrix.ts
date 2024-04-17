@@ -130,6 +130,7 @@ export function calculatePoints(state: number[][], grid: number[][]): number {
 
   for (const star of starPlaces) {
     let val = state[star.y][star.x];
+    if (val == 1) continue;
     points += val === 0 ? 2 : val;
 
     let yMin = Math.max(0, star.y - 1);
